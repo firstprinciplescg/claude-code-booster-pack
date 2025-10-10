@@ -151,6 +151,42 @@ Manage and visualize the technology stack across your projects.
 
 **When to use:** Documenting technologies, tracking dependencies, planning migrations.
 
+### `/ship` - Ship to Production
+Commits all changes and pushes to GitHub with automatic pre-flight checks and meaningful commit messages.
+
+**Features:**
+- Pre-flight linting for Node.js projects (runs `npm run lint` if `package.json` exists)
+- Reviews git status and staged changes
+- Analyzes recent commit style for consistency
+- Creates descriptive commit messages with proper formatting
+- Includes Claude Code attribution footer
+
+**When to use:** Ready to commit and push changes, deploying to production, ensuring lint passes before CI/CD.
+
+### `/workstation-start` - Start Work Session
+Syncs with the remote repository and prepares your workstation for a new work session.
+
+**Features:**
+- Pulls latest changes from remote
+- Checks current git status
+- Reads WORKSTATION.md for handoff notes from other workstation
+- Updates WORKSTATION.md with current session info (machine name, timestamp, branch, commit)
+- Displays uncommitted changes and TODOs
+
+**When to use:** Starting work on a project, switching between multiple workstations, resuming work after a break.
+
+### `/workstation-end` - End Work Session
+Saves all work and prepares comprehensive handoff notes for your other workstation.
+
+**Features:**
+- Checks and stages all changes
+- Creates WIP commits with descriptive state information
+- Pushes all commits to remote
+- Updates WORKSTATION.md with session summary, completed work, and next steps
+- Final status check to confirm everything is saved
+
+**When to use:** Ending a work session, switching to another machine, ensuring no work is lost during handoff.
+
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
