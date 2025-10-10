@@ -1,0 +1,38 @@
+# Sensitive files
+*.credentials.json
+.credentials.json
+*.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# Claude Code specific
+history.jsonl
+file-history/
+shell-snapshots/
+todos/
+statsig/
+debug/
+settings.local.json
+
+# IDE and Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# OS
+Thumbs.db
+desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# Personal notes (optional - remove if you want to track these)
+NOTES.md
+TODO.md
