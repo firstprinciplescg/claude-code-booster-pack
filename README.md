@@ -11,7 +11,6 @@ A collection of powerful custom slash commands and specialized agents to superch
 - **`/adr`** - Architectural Decision Records - Document and track architectural decisions
 - **`/ccc`** - Claude Code Cleanup - Analyze and optimize your Claude Code configuration
 - **`/tag`** - Tag Management - Add and manage project tags and metadata
-- **`/tasks`** - Task Sync - Synchronize tasks between Claude Code TodoWrite and Asana
 - **`/tech-stack`** - Tech Stack Manager - Manage and visualize technology stack across projects
 - **`/ship`** - Ship - Streamlined deployment and release workflow
 - **`/workstation-start`** - Workstation Start - Initialize your development environment
@@ -140,11 +139,6 @@ Analyzes and optimizes your Claude Code configuration files.
 Add and update project tags and metadata for better organization.
 
 **When to use:** Categorizing projects, adding metadata for search and filtering.
-
-### `/tasks` - Task Synchronization
-Sync tasks between Claude Code TodoWrite and Asana.
-
-**When to use:** Managing tasks across tools, keeping work synchronized.
 
 ### `/tech-stack` - Tech Stack Manager
 Manage and visualize the technology stack across your projects.
