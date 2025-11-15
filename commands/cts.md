@@ -34,6 +34,34 @@ Create a CONCISE context transfer summary (CTS) that captures THIS SESSION's key
 2. Next action after that
 3. Any prerequisites or dependencies
 
+### Project Status Update (if applicable)
+⚠️ **Update PROJECT_STATUS.md when you complete significant work:**
+
+**When to update:**
+- Complete a major feature/component (update checkboxes: ⏳ → 🔄 or ✅)
+- Finish an entire category of work (e.g., all endpoints for a feature)
+- Phase progress changes significantly (e.g., 40% → 60%)
+- New blocker discovered or resolved
+
+**Where to update:**
+- Find the relevant phase section in [PROJECT_STATUS.md](../PROJECT_STATUS.md)
+- Update checkboxes: `[ ]` → `[x]`
+- Update progress percentages if significant
+- Update "Next Priorities" if focus shifts
+- Add/remove blockers in "Known Blockers & Issues" section
+
+**Example:**
+```markdown
+### 5.3 Revenue-Share Campaign Tracking
+
+**Frontend (🔄 In Progress - ~40% Complete)**  ← Update percentage
+- [x] Revenue-share configuration UI (was [ ])  ← Mark complete
+- [x] Commission tracking dashboard (was [ ])
+- [ ] GMV reporting charts  ← Still pending
+```
+
+**Don't update:** CLAUDE.md Phase 5 Progress Tracker (it's a summary, not the source of truth)
+
 ### Important Context
 - Constraints, preferences, gotchas discussed
 - Links to relevant files/docs for deep dive
