@@ -51,7 +51,7 @@ A collection of powerful custom slash commands and specialized agents to superch
 
 1. Clone this repository:
 ```bash
-git clone https://github.com/YOUR_USERNAME/claude-code-booster-pack.git
+git clone https://github.com/firstprinciplescg/claude-code-booster-pack.git
 cd claude-code-booster-pack
 ```
 
@@ -109,21 +109,37 @@ Can you use the architecture-advisor agent to help me design this system?
 
 ## 📚 Command Reference
 
-### `/cts` - Context Transfer Summary
-Creates a comprehensive session handoff document including:
-- Session summary and progress
-- File changes and modifications
-- Key decisions and context
-- Next steps and TODOs
+### Context Management Workflow
 
-**When to use:** Before ending a session, hitting context limits, or handing off work.
+**Critical for multi-session projects:** Claude Code's context window resets between sessions. Use these commands to maintain continuity:
+
+**Session pattern:**
+```
+Start session → /rehy → work → End session → /cts
+```
+
+This ensures Claude never repeats work, retries failed approaches, or loses architectural decisions across context resets.
+
+### `/cts` - Context Transfer Summary
+Creates a lean handoff document (30-second skim) capturing:
+- Key decisions and WHY they were made
+- Approaches tried that failed (and why)
+- Current state, blockers, open questions
+- Next steps and prerequisites
+
+Excludes code/file contents (they're in git). Focuses on context Claude needs to continue effectively after context reset.
+
+**When to use:** End of every session, before hitting context limits, or before `/clear`.
 
 ### `/rehy` - Rehydrate Context
-Restores working context from:
-- CLAUDE.md memory files
-- Latest CTS file from session history
+Efficiently restores Claude's working context after reset:
+- Checks if CLAUDE.md already in context (token optimization)
+- Loads latest CTS file with decisions/next steps
+- Provides structured summary of what's accomplished and what remains
 
-**When to use:** Starting a new session, resuming previous work, recovering from crashes.
+**Token efficiency:** Restores full project context in ~1700 tokens vs ~7000 tokens manually explaining everything.
+
+**When to use:** Start of every session, after `/clear`, resuming work after context reset.
 
 ### `/adr` - Architectural Decision Records
 Document, list, and view architectural decisions using the ADR pattern.
