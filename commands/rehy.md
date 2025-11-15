@@ -7,7 +7,7 @@ description: Rehydrate context from CLAUDE.md and latest CTS file
 Please perform the following steps:
 
 1. **Check for CLAUDE.md in your current context:**
-   - If CLAUDE.md content is already available in your context (check for sections like "## Current Implementation Status" or "## Phase 5 Progress Tracker"), **skip to step 2**
+   - If CLAUDE.md content is already available in your context (check for project-specific sections or progress trackers), **skip to step 2**
    - If CLAUDE.md is NOT in your context, read the CLAUDE.md file from the project root
 
 2. Search for the most recent Context Transfer Summary (CTS) file:
@@ -28,11 +28,5 @@ Please perform the following steps:
    **Proposed Immediate Next Steps:**
    - Extract and present the recommended next steps from the CTS file
    - Prioritize them in order of importance/dependency
-
-4. **Note on PROJECT_STATUS.md:**
-   - This file contains detailed phase tracking with checkboxes for all features
-   - **DO NOT read the entire file** - it's 468 lines and will consume excessive tokens
-   - Instead, reference it in your summary and remind the user to check specific sections if they need detailed status
-   - Example: "For detailed Phase 5 checklist, see PROJECT_STATUS.md § Phase 5"
 
 Please format the response clearly with headers and bullet points for easy reading.
