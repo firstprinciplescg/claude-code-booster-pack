@@ -1,12 +1,12 @@
 # Claude Code Booster Pack
 
-Custom slash commands that fill gaps in Claude Code's built-in feature set. Focused on cross-session context management, architectural decision tracking, and project metadata.
+Custom slash commands that fill gaps in Claude Code's built-in feature set. Focused on cross-session context management, architectural decision tracking, project metadata, and streamlined git/multi-workstation workflows.
 
 ## Why These Exist
 
 Claude Code has excellent tools for working *within* a session — `/compact`, `--continue`, `--resume`, `/rewind`. But it lacks tools for carrying high-signal context *across* fresh sessions. It also has no built-in support for lightweight architectural decision records or project-level metadata management.
 
-These five commands address those gaps.
+These commands address those gaps, and add a few git and multi-workstation workflow helpers.
 
 ## What's Included
 
@@ -17,6 +17,9 @@ These five commands address those gaps.
 | `/adr` | Document, list, and view architectural decisions |
 | `/tag` | Add and manage project tags and metadata |
 | `/tech-stack` | Manage and visualize technology stack across projects |
+| `/ship` | Commit and push with pre-flight checks and a meaningful message |
+| `/workstation-start` | Sync and prepare your workstation for a new work session |
+| `/workstation-end` | Save work and prepare handoff notes for your other workstation |
 
 ## Installation
 
@@ -100,16 +103,55 @@ Manage and visualize the technology stack across projects:
 
 **When to use:** Documenting technologies, tracking dependencies, planning migrations.
 
+### Git & Workstation Workflow
+
+#### `/ship` - Ship to Production
+
+Commits all changes and pushes to GitHub with automatic pre-flight checks and meaningful commit messages.
+
+**Features:**
+- Pre-flight linting for Node.js projects (runs `npm run lint` if `package.json` exists)
+- Reviews git status and staged changes
+- Analyzes recent commit style for consistency
+- Creates descriptive commit messages with proper formatting
+- Includes Claude Code attribution footer
+
+**When to use:** Ready to commit and push changes, deploying to production, ensuring lint passes before CI/CD.
+
+#### `/workstation-start` - Start Work Session
+
+Syncs with the remote repository and prepares your workstation for a new work session.
+
+**Features:**
+- Pulls latest changes from remote
+- Checks current git status
+- Reads WORKSTATION.md for handoff notes from other workstation
+- Updates WORKSTATION.md with current session info (machine name, timestamp, branch, commit)
+- Displays uncommitted changes and TODOs
+
+**When to use:** Starting work on a project, switching between multiple workstations, resuming work after a break.
+
+#### `/workstation-end` - End Work Session
+
+Saves all work and prepares comprehensive handoff notes for your other workstation.
+
+**Features:**
+- Checks and stages all changes
+- Creates WIP commits with descriptive state information
+- Pushes all commits to remote
+- Updates WORKSTATION.md with session summary, completed work, and next steps
+- Final status check to confirm everything is saved
+
+**When to use:** Ending a work session, switching to another machine, ensuring no work is lost during handoff.
+
 ## What Was Removed (and Why)
 
-Previous versions of this booster pack included 17 specialized agents and 4 additional commands. These have been removed because Claude Code now provides them natively:
+Previous versions of this booster pack also included 17 specialized agents and the `/ccc` command. These have been removed because Claude Code now provides them natively:
 
 **Agents removed:** All 17 specialized agents (architecture-advisor, api-designer, code-review-specialist, debugging-assistant, etc.) are now built-in Claude Code subagent types. Installing custom copies creates duplicates that compete with the native versions.
 
 **Commands removed:**
 - `/ccc` — replaced by built-in `/doctor`, `/config`, and the native `claude-code-cleanup` agent
-- `/ship` — replaced by built-in `/diff`, `/security-review`, and native git workflows
-- `/workstation-start` and `/workstation-end` — replaced by `claude --continue`, `--resume`, and built-in session persistence
 
 ## Contributing
 
