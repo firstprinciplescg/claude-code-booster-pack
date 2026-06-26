@@ -2,7 +2,7 @@
   workstation.ps1 - shared mechanics for the /workstation-start, /workstation-end,
   /cts, and /rehy commands.
 
-  Central model: ONE private repo (fpcg-working-notes) holds <client>/<project>/ dirs.
+  Central model: ONE private notes repo holds <client>/<project>/ dirs.
   Each project's local _notes/ is a junction into its <client>/<project>/ folder, so
   notes read/written as _notes/... in the project actually live in (and sync via) the
   central repo - never the client's repo.
@@ -34,7 +34,7 @@ $ConfigPath = Join-Path $HOME '.claude\workstation.json'
 
 function Load-Config {
   if (-not (Test-Path $ConfigPath)) {
-    throw "NO_CONFIG: $ConfigPath missing. Create it: { `"notesRemote`": `"<git url>`", `"notesDir`": `"<local clone path>`" }. See the fpcg-working-notes README."
+    throw "NO_CONFIG: $ConfigPath missing. Run /workstation-setup (or create it: { `"notesRemote`": `"<git url>`", `"notesDir`": `"<local clone path>`" })."
   }
   return (Get-Content $ConfigPath -Raw | ConvertFrom-Json)
 }

@@ -5,7 +5,7 @@ description: End a work session — write handoff notes and sync them across mac
 # /workstation-end
 
 End a work session and hand off to your other machine. Handoff notes go to the **central
-private repo** `fpcg-working-notes` (via the `_notes/` junction), **not** the project's
+private working-notes repo** (via the `_notes/` junction), **not** the project's
 repo. By default this command is **report-only** for the project (client) repo — it will
 not commit or push it. Pass `--commit` only if you explicitly want a WIP commit + push on
 the project repo (use with care on client repos).

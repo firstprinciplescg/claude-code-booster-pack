@@ -47,7 +47,7 @@ Create a CONCISE context transfer summary (CTS) that captures THIS SESSION's key
 
 ## Where to save + how it syncs
 
-`_notes/` is a **junction** into the central private repo `fpcg-working-notes`
+`_notes/` is a **junction** into your central private working-notes repo
 (`<client>/<project>/`). Writing into `_notes/` automatically lands the file in that repo.
 
 0. **First-run self-heal.** If `~/.claude/scripts/workstation.ps1` or

@@ -5,7 +5,7 @@ description: Start a work session — sync cross-machine notes, rehydrate handof
 # /workstation-start
 
 Begin a work session. Session notes (`WORKSTATION.md` + CTS files) live in the **central
-private repo** `fpcg-working-notes`, NOT in this project's repo. The project's local
+private working-notes repo**, NOT in this project's repo. The project's local
 `_notes/` is a junction into that repo's `<client>/<project>/` folder, so everything here
 reads/writes `_notes/...` and syncs through the central repo — never the client's remote.
 
@@ -25,7 +25,7 @@ Helper script (does all the mechanics): `~/.claude/scripts/workstation.ps1`
    ```
    If this errors with `NO_CONFIG`, the machine isn't set up yet: create
    `~/.claude/workstation.json` with `{ "notesRemote": "<git url>", "notesDir": "<local clone path>" }`
-   (see the `fpcg-working-notes` README), then re-run.
+   (or just run `/workstation-setup`), then re-run.
 
 2. **Resolve this project** to its client/project notes dir:
    ```bash
@@ -63,5 +63,5 @@ Helper script (does all the mechanics): `~/.claude/scripts/workstation.ps1`
 8. **Show summary**: uncommitted project changes, recent commits, and TODOs from
    `WORKSTATION.md`.
 
-> Notes sync through `fpcg-working-notes`. This command never commits or pushes the
+> Notes sync through your private notes repo. This command never commits or pushes the
 > project (client) repo.

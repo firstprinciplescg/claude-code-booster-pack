@@ -4,7 +4,7 @@ description: Rehydrate context from CLAUDE.md and latest CTS file
 
 # Rehydrate Context from CLAUDE.md and Latest CTS
 
-Session notes live in the central private repo `fpcg-working-notes`, surfaced in this
+Session notes live in your central private working-notes repo, surfaced in this
 project through the `_notes/` junction. Refresh them first so you rehydrate from the latest
 state synced from any machine.
 
