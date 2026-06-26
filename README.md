@@ -18,8 +18,9 @@ These commands address those gaps, and add a few git and multi-workstation workf
 | `/tag` | Add and manage project tags and metadata |
 | `/tech-stack` | Manage and visualize technology stack across projects |
 | `/ship` | Commit and push with pre-flight checks and a meaningful message |
-| `/workstation-start` | Sync and prepare your workstation for a new work session |
-| `/workstation-end` | Save work and prepare handoff notes for your other workstation |
+| `/workstation-setup` | One-time per-machine setup for the cross-machine notes system |
+| `/workstation-start` | Sync cross-machine notes and rehydrate handoff state for a new session |
+| `/workstation-end` | Write handoff notes and sync them across machines (report-only on your repo) |
 
 ## Installation
 
@@ -35,6 +36,12 @@ cp -r commands/* ~/.claude/commands/
 ```
 
 3. Restart Claude Code or reload your configuration.
+
+4. (Workstation commands only) Run `/workstation-setup` once per machine — or just run any
+   `/workstation-*` command and it self-heals. Setup fetches `scripts/workstation.ps1` to
+   `~/.claude/scripts/`, discovers or asks for your private notes-repo URL, and clones it.
+   Requires `gh` authenticated. To enable zero-prompt discovery on future machines, add the
+   GitHub topic `workstation-notes` to your private notes repo.
 
 ## Command Reference
 
@@ -118,31 +125,57 @@ Commits all changes and pushes to GitHub with automatic pre-flight checks and me
 
 **When to use:** Ready to commit and push changes, deploying to production, ensuring lint passes before CI/CD.
 
+#### How cross-machine notes work
+
+Session notes (`WORKSTATION.md` + `*_CTS.md`) sync through **one universal private repo**
+of your own — *not* the project's repo. This matters most for client repos: you never want
+WIP or personal handoff notes pushed to a client's remote.
+
+- The private notes repo uses a `<client>/<project>/` layout, one folder per project.
+- Each project's local `_notes/` is a **junction/symlink** into its folder in that repo, so
+  the commands read/write `_notes/...` in the project while the files live in (and sync via)
+  the central repo. `WORKSTATION.md` lives at `_notes/WORKSTATION.md`.
+- Mechanics live in `scripts/workstation.ps1` (actions: `bootstrap`, `resolve`, `register`,
+  `link`, `pull`, `push`, `discover`, `init-config`), driven by a local
+  `~/.claude/workstation.json` config.
+
+**Nothing personal is stored in this public pack.** Your notes-repo URL is discovered at
+runtime (via a `workstation-notes` GitHub topic) or asked for once, and saved only locally.
+
+#### `/workstation-setup` - One-Time Machine Setup
+
+Prepares a machine: fetches the helper script, discovers (or asks for) your private
+notes-repo URL, writes `~/.claude/workstation.json`, and clones the notes repo. The other
+workstation commands run this automatically (their "Step 0") if they detect the machine
+isn't set up, so it's rarely needed by hand.
+
+**When to use:** First time on a new machine (or just run any workstation command and let it
+self-heal).
+
 #### `/workstation-start` - Start Work Session
 
-Syncs with the remote repository and prepares your workstation for a new work session.
+Syncs cross-machine notes and rehydrates handoff state.
 
 **Features:**
-- Pulls latest changes from remote
-- Checks current git status
-- Reads WORKSTATION.md for handoff notes from other workstation
-- Updates WORKSTATION.md with current session info (machine name, timestamp, branch, commit)
-- Displays uncommitted changes and TODOs
+- Self-heals an unconfigured machine (runs setup)
+- Pulls the central notes repo and ensures the project's `_notes` junction exists
+- Reads `_notes/WORKSTATION.md` + latest CTS and summarizes what the other machine was doing
+- Stamps the session (machine, time, branch, commit) into `WORKSTATION.md`
+- Optionally pulls the project repo (read-only); never force/stash without asking
 
-**When to use:** Starting work on a project, switching between multiple workstations, resuming work after a break.
+**When to use:** Starting work, switching machines, resuming after a break.
 
 #### `/workstation-end` - End Work Session
 
-Saves all work and prepares comprehensive handoff notes for your other workstation.
+Writes handoff notes and syncs them across machines.
 
 **Features:**
-- Checks and stages all changes
-- Creates WIP commits with descriptive state information
-- Pushes all commits to remote
-- Updates WORKSTATION.md with session summary, completed work, and next steps
-- Final status check to confirm everything is saved
+- Writes `_notes/WORKSTATION.md`: branch, commit, uncommitted files, clear next steps
+- **Report-only on the project repo by default** — it does NOT `git add`/commit/push your
+  code (safe for client repos). Pass `--commit` to opt into a WIP commit + push.
+- Syncs the central notes repo (the only automatic push)
 
-**When to use:** Ending a work session, switching to another machine, ensuring no work is lost during handoff.
+**When to use:** Ending a session, switching machines, handing off without losing context.
 
 ## What Was Removed (and Why)
 

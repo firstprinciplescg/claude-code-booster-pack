@@ -10,6 +10,10 @@ state synced from any machine.
 
 Please perform the following steps:
 
+0. **First-run self-heal.** If `~/.claude/scripts/workstation.ps1` or
+   `~/.claude/workstation.json` is missing, run the `/workstation-setup` routine first
+   (fetch helper, discover-or-ask notes URL, write config, clone notes repo), then continue.
+
 1. **Sync the notes** (pull the central repo; ensure the `_notes` junction exists):
    ```bash
    powershell -NoProfile -ExecutionPolicy Bypass -File "$HOME/.claude/scripts/workstation.ps1" -Action bootstrap

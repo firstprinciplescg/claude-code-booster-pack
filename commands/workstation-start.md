@@ -13,6 +13,12 @@ Helper script (does all the mechanics): `~/.claude/scripts/workstation.ps1`
 
 ## Steps to execute
 
+0. **First-run self-heal.** If `~/.claude/scripts/workstation.ps1` or
+   `~/.claude/workstation.json` is missing, this machine isn't set up — perform the
+   `/workstation-setup` routine first (fetch the helper from the pack's public raw URL,
+   discover-or-ask the notes-repo URL, write the config, clone the notes repo), then
+   continue below.
+
 1. **Bootstrap the notes repo** (clone if missing on this machine, then pull):
    ```bash
    powershell -NoProfile -ExecutionPolicy Bypass -File "$HOME/.claude/scripts/workstation.ps1" -Action bootstrap

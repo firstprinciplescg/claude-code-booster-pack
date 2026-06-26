@@ -50,6 +50,10 @@ Create a CONCISE context transfer summary (CTS) that captures THIS SESSION's key
 `_notes/` is a **junction** into the central private repo `fpcg-working-notes`
 (`<client>/<project>/`). Writing into `_notes/` automatically lands the file in that repo.
 
+0. **First-run self-heal.** If `~/.claude/scripts/workstation.ps1` or
+   `~/.claude/workstation.json` is missing, run the `/workstation-setup` routine first
+   (fetch helper, discover-or-ask notes URL, write config, clone notes repo), then continue.
+
 1. **Ensure the junction exists** (creates it on a fresh machine; idempotent):
    ```bash
    powershell -NoProfile -ExecutionPolicy Bypass -File "$HOME/.claude/scripts/workstation.ps1" -Action link

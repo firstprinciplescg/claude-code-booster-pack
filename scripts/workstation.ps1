@@ -19,11 +19,13 @@
 #>
 param(
   [Parameter(Mandatory = $true)]
-  [ValidateSet('bootstrap', 'resolve', 'register', 'link', 'pull', 'push')]
+  [ValidateSet('bootstrap', 'resolve', 'register', 'link', 'pull', 'push', 'discover', 'init-config')]
   [string]$Action,
   [string]$Client,
   [string]$Project,
   [string]$Message,
+  [string]$NotesRemote,
+  [string]$NotesDir,
   [string]$ProjectPath = (Get-Location).Path
 )
 
@@ -186,5 +188,62 @@ switch ($Action) {
       }
     }
     finally { Pop-Location }
+  }
+
+  'discover' {
+    # Find the user's private notes repo via the 'workstation-notes' GitHub topic, then
+    # a name-pattern fallback. Prints the clone URL (with .git) or nothing. Never throws -
+    # callers treat empty output as "not found, ask the user".
+    $found = ''
+    try {
+      $login = (gh api user --jq .login 2>$null)
+      if ($login) {
+        $json = gh search repos --owner=$login --topic=workstation-notes --json url --limit 5 2>$null
+        if ($json) {
+          $items = $json | ConvertFrom-Json
+          if ($items -and $items.Count -ge 1) { $found = $items[0].url }
+        }
+      }
+    }
+    catch {}
+    if (-not $found) {
+      try {
+        $json = gh repo list --json name, url --limit 300 2>$null
+        if ($json) {
+          $m = ($json | ConvertFrom-Json) | Where-Object { $_.name -match '(working|workstation)-notes$' } | Select-Object -First 1
+          if ($m) { $found = $m.url }
+        }
+      }
+      catch {}
+    }
+    if ($found) {
+      if ($found -notmatch '\.git$') { $found = "$found.git" }
+      Write-Output $found
+    }
+  }
+
+  'init-config' {
+    if (-not $NotesRemote) { throw "init-config requires -NotesRemote" }
+    $dir = Split-Path $ConfigPath -Parent
+    if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Path $dir -Force | Out-Null }
+    $repoName = (($NotesRemote -split '/')[-1]) -replace '\.git$', ''
+    if (-not $NotesDir) { $NotesDir = (Join-Path (Join-Path $HOME '.claude') $repoName) }
+    # Identity for the notes-repo commits. Prefer global git config; fall back to the
+    # authed gh account so a fresh machine needs no manual git setup.
+    $gitName = ''; $gitEmail = ''
+    try { $gitName = (git config --global user.name) } catch {}
+    try { $gitEmail = (git config --global user.email) } catch {}
+    if (-not $gitName) { try { $gitName = (gh api user --jq .login 2>$null) } catch {} }
+    if (-not $gitEmail) { try { $gitEmail = (gh api user --jq '.email // empty' 2>$null) } catch {} }
+    if (-not $gitEmail -and $gitName) { $gitEmail = "$gitName@users.noreply.github.com" }
+    $cfg = [ordered]@{
+      notesRemote = $NotesRemote
+      notesDir    = ($NotesDir -replace '\\', '/')
+      git         = [ordered]@{ userName = "$gitName"; userEmail = "$gitEmail" }
+    }
+    ($cfg | ConvertTo-Json -Depth 5) | Out-File -FilePath $ConfigPath -Encoding utf8
+    Write-Output "OK: wrote $ConfigPath"
+    Write-Output "notesRemote: $NotesRemote"
+    Write-Output "notesDir: $($cfg.notesDir)"
   }
 }
