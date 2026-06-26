@@ -1,33 +1,61 @@
+---
+description: Start a work session — sync cross-machine notes, rehydrate handoff state
+---
+
 # /workstation-start
 
-Start a new work session by syncing with the remote repository and checking the workstation status.
+Begin a work session. Session notes (`WORKSTATION.md` + CTS files) live in the **central
+private repo** `fpcg-working-notes`, NOT in this project's repo. The project's local
+`_notes/` is a junction into that repo's `<client>/<project>/` folder, so everything here
+reads/writes `_notes/...` and syncs through the central repo — never the client's remote.
 
-## Steps to execute:
+Helper script (does all the mechanics): `~/.claude/scripts/workstation.ps1`
 
-1. **Pull latest changes from remote**
+## Steps to execute
+
+1. **Bootstrap the notes repo** (clone if missing on this machine, then pull):
    ```bash
-   git pull
+   powershell -NoProfile -ExecutionPolicy Bypass -File "$HOME/.claude/scripts/workstation.ps1" -Action bootstrap
+   ```
+   If this errors with `NO_CONFIG`, the machine isn't set up yet: create
+   `~/.claude/workstation.json` with `{ "notesRemote": "<git url>", "notesDir": "<local clone path>" }`
+   (see the `fpcg-working-notes` README), then re-run.
+
+2. **Resolve this project** to its client/project notes dir:
+   ```bash
+   powershell -NoProfile -ExecutionPolicy Bypass -File "$HOME/.claude/scripts/workstation.ps1" -Action resolve
+   ```
+   - If `found: true` → continue.
+   - If `found: false` → this project has no notes dir yet. Determine the **client** and
+     **project** names from existing docs (CLAUDE.md, README, the repo path). If they
+     aren't clearly available, **ask the user**. Then register + create the dir:
+     ```bash
+     powershell -NoProfile -ExecutionPolicy Bypass -File "$HOME/.claude/scripts/workstation.ps1" -Action register -Client <client> -Project <project>
+     ```
+
+3. **Ensure the `_notes` junction exists** (creates it on a fresh machine; idempotent; also
+   makes sure `.git/info/exclude` hides `_notes/` + `WORKSTATION.md` from the client repo):
+   ```bash
+   powershell -NoProfile -ExecutionPolicy Bypass -File "$HOME/.claude/scripts/workstation.ps1" -Action link
    ```
 
-2. **Check current git status**
+4. **Pull latest notes**:
    ```bash
-   git status
+   powershell -NoProfile -ExecutionPolicy Bypass -File "$HOME/.claude/scripts/workstation.ps1" -Action pull
    ```
 
-3. **Read WORKSTATION.md if it exists**
-   - Check for any notes from the other workstation
-   - Review uncommitted work listed
-   - Note the next steps section
+5. **Rehydrate handoff state.** Read `_notes/WORKSTATION.md` and the most recent
+   `_notes/*_CTS.md`. Summarize for the user: what the other machine was doing, current
+   branch, uncommitted work, and the next steps.
 
-4. **Update WORKSTATION.md with current session info**
-   - Current machine name
-   - Session start time
-   - Current branch
-   - Latest commit hash
+6. **Stamp the session** into `_notes/WORKSTATION.md` (this is the file inside the junction,
+   so it syncs): current machine name, session start time, current branch, latest commit hash.
 
-5. **Show summary**
-   - Display any uncommitted changes
-   - Show recent commits
-   - Remind about any TODOs from WORKSTATION.md
+7. **Project repo (read-only sync, optional).** If the project branch has an upstream,
+   `git pull` it and report. Never force or stash without asking.
 
-This ensures you're always starting with the latest code and understanding what was happening on the other machine.
+8. **Show summary**: uncommitted project changes, recent commits, and TODOs from
+   `WORKSTATION.md`.
+
+> Notes sync through `fpcg-working-notes`. This command never commits or pushes the
+> project (client) repo.

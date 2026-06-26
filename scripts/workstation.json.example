@@ -1,0 +1,9 @@
+{
+  "_comment": "Copy to ~/.claude/workstation.json on each machine and edit. Keeps the private notes-repo URL out of this (shareable) booster-pack.",
+  "notesRemote": "https://github.com/<you>/<your-working-notes>.git",
+  "notesDir": "C:/Users/<you>/GitHub/<org>/<your-working-notes>",
+  "git": {
+    "userName": "your-git-name",
+    "userEmail": "you@example.com"
+  }
+}

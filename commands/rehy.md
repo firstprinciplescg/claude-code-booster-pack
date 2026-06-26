@@ -4,29 +4,39 @@ description: Rehydrate context from CLAUDE.md and latest CTS file
 
 # Rehydrate Context from CLAUDE.md and Latest CTS
 
+Session notes live in the central private repo `fpcg-working-notes`, surfaced in this
+project through the `_notes/` junction. Refresh them first so you rehydrate from the latest
+state synced from any machine.
+
 Please perform the following steps:
 
-1. **Check for CLAUDE.md in your current context:**
-   - If CLAUDE.md content is already available in your context (check for project-specific sections or progress trackers), **skip to step 2**
-   - If CLAUDE.md is NOT in your context, read the CLAUDE.md file from the project root
+1. **Sync the notes** (pull the central repo; ensure the `_notes` junction exists):
+   ```bash
+   powershell -NoProfile -ExecutionPolicy Bypass -File "$HOME/.claude/scripts/workstation.ps1" -Action bootstrap
+   powershell -NoProfile -ExecutionPolicy Bypass -File "$HOME/.claude/scripts/workstation.ps1" -Action link
+   ```
+   If `link` reports the project isn't registered, run `-Action resolve`; if `found: false`,
+   get client + project from docs or ask the user, then `-Action register` before linking.
+   (If the helper/config isn't set up on this machine, fall back to reading whatever is in
+   the local `_notes/` directory.)
 
-2. Search for the most recent Context Transfer Summary (CTS) file:
-   - First, check if the `_notes` directory exists in the project root
-   - If `_notes` exists, look for the most recent timestamped CTS file (format: `*CTS*.md` or `YYYY-MM-DD*.md`) in that directory
-   - If no CTS file is found in `_notes` or `_notes` doesn't exist, search the project root directory for timestamped files (format: `YYYY-MM-DD_*`)
+2. **Check for CLAUDE.md in your current context:**
+   - If CLAUDE.md content is already available in your context, **skip to step 3**
+   - If not, read the CLAUDE.md file from the project root
 
-3. Based on CLAUDE.md (from context or file) and the latest CTS file, provide a concise summary that includes:
+3. **Read the handoff + latest CTS:**
+   - Read `_notes/WORKSTATION.md` if present (live cross-machine handoff state)
+   - Find and read the most recent timestamped CTS file in `_notes/` (format `*_CTS.md`)
+
+4. Based on CLAUDE.md, `WORKSTATION.md`, and the latest CTS, provide a concise summary:
 
    **What Has Been Accomplished:**
-   - List all completed tasks and implementations from the CTS file
-   - Highlight major milestones reached
+   - Completed tasks and milestones from the CTS / handoff
 
    **What Remains to Be Accomplished:**
-   - List all pending/incomplete tasks from the CTS file
-   - Note any blockers or dependencies
+   - Pending/incomplete tasks, blockers, dependencies
 
    **Proposed Immediate Next Steps:**
-   - Extract and present the recommended next steps from the CTS file
-   - Prioritize them in order of importance/dependency
+   - The recommended next steps, prioritized by importance/dependency
 
 Please format the response clearly with headers and bullet points for easy reading.

@@ -45,6 +45,24 @@ Create a CONCISE context transfer summary (CTS) that captures THIS SESSION's key
 ❌ Project description (it's in CLAUDE.md)
 ❌ Details already in committed code
 
-Save to: `_notes/<yyyy-mm-dd-hhmm>_<project_name>_<brief_description>_CTS.md`
+## Where to save + how it syncs
 
-Create `_notes/` directory if it doesn't exist.
+`_notes/` is a **junction** into the central private repo `fpcg-working-notes`
+(`<client>/<project>/`). Writing into `_notes/` automatically lands the file in that repo.
+
+1. **Ensure the junction exists** (creates it on a fresh machine; idempotent):
+   ```bash
+   powershell -NoProfile -ExecutionPolicy Bypass -File "$HOME/.claude/scripts/workstation.ps1" -Action link
+   ```
+   If this reports the project isn't registered, run `-Action resolve`; if `found: false`,
+   get the client + project names from docs or ask the user, then
+   `-Action register -Client <client> -Project <project>` before linking.
+
+2. **Save** to: `_notes/<yyyy-mm-dd-hhmm>_<project_name>_<brief_description>_CTS.md`
+
+3. **Sync** the new CTS to the central repo:
+   ```bash
+   powershell -NoProfile -ExecutionPolicy Bypass -File "$HOME/.claude/scripts/workstation.ps1" -Action push -Message "cts: <brief_description>"
+   ```
+
+> This writes only to the central notes repo — never the project (client) repo.
