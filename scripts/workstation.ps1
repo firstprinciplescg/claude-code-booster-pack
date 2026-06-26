@@ -178,13 +178,23 @@ switch ($Action) {
       if ($cfg.git -and $cfg.git.userEmail) { git config user.email $cfg.git.userEmail }
       git add -A
       git diff --cached --quiet
-      if ($LASTEXITCODE -ne 0) {
-        git commit -q -m $Message
-        git push
-        Write-Output "OK: notes synced - $Message"
+      if ($LASTEXITCODE -eq 0) {
+        Write-Output "OK: nothing to sync (notes already up to date)"
       }
       else {
-        Write-Output "OK: nothing to sync (notes already up to date)"
+        git commit -q -m $Message
+        # Integrate commits pushed from another machine before pushing, so a
+        # non-fast-forward doesn't leave this commit stranded locally.
+        git pull --rebase 2>&1 | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+          git rebase --abort 2>&1 | Out-Null
+          throw "SYNC_CONFLICT: the notes repo has diverging remote changes needing a manual merge in $($cfg.notesDir). Your commit is saved locally - resolve there and re-run push."
+        }
+        git push
+        if ($LASTEXITCODE -ne 0) {
+          throw "PUSH_FAILED: rebased cleanly but push was rejected. Check $($cfg.notesDir)."
+        }
+        Write-Output "OK: notes synced - $Message"
       }
     }
     finally { Pop-Location }
