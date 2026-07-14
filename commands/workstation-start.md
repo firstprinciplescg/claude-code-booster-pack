@@ -31,13 +31,22 @@ Helper script (does all the mechanics): `~/.claude/scripts/workstation.ps1`
    ```bash
    powershell -NoProfile -ExecutionPolicy Bypass -File "$HOME/.claude/scripts/workstation.ps1" -Action resolve
    ```
-   - If `found: true` → continue.
-   - If `found: false` → this project has no notes dir yet. Determine the **client** and
-     **project** names from existing docs (CLAUDE.md, README, the repo path). If they
-     aren't clearly available, **ask the user**. Then register + create the dir:
+   - If `found: true` → continue. (`resolve` matches on the git remote via the synced
+     `registry.json`, falling back to a committed `.workstation.json` marker in the repo —
+     so a fresh machine resolves without guessing even if the registry is stale. When the
+     marker is used, it self-heals the registry and prints `resolved via marker`.)
+   - If `found: false` → genuinely no mapping exists anywhere. Determine the **client** and
+     **project** names from existing docs (CLAUDE.md, README, the repo path). **Do not guess
+     the client from the local folder path** — it often differs from the notes taxonomy
+     (which usually keys off the git org). If unclear, **ask the user**. Then register:
      ```bash
      powershell -NoProfile -ExecutionPolicy Bypass -File "$HOME/.claude/scripts/workstation.ps1" -Action register -Client <client> -Project <project>
      ```
+     `register` writes a `.workstation.json` marker into the project repo — **commit it** so
+     future fresh machines resolve instantly without guessing.
+
+   > Run `bootstrap` fully **before** `resolve` (never batch them in parallel): `resolve`
+   > reads the registry that `bootstrap` just synced. A stale read is what forces a bad guess.
 
 3. **Ensure the `_notes` junction exists** (creates it on a fresh machine; idempotent; also
    makes sure `.git/info/exclude` hides `_notes/` + `WORKSTATION.md` from the client repo):

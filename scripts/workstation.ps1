@@ -69,6 +69,21 @@ function Save-Registry($cfg, $reg) {
   ($reg | ConvertTo-Json -Depth 10) | Out-File -FilePath $p -Encoding utf8
 }
 
+function Load-Marker([string]$projectPath) {
+  # A committed .workstation.json in the client repo records this project's
+  # <client>/<project> mapping. Present on every fresh checkout, so it resolves the
+  # notes dir even when the synced registry is stale or unreachable.
+  $p = Join-Path $projectPath '.workstation.json'
+  if (-not (Test-Path $p)) { return $null }
+  try { return (Get-Content $p -Raw | ConvertFrom-Json) } catch { return $null }
+}
+
+function Write-Marker([string]$projectPath, [string]$client, [string]$project) {
+  $p = Join-Path $projectPath '.workstation.json'
+  ([ordered]@{ client = $client; project = $project } | ConvertTo-Json) | Out-File -FilePath $p -Encoding utf8
+  return $p
+}
+
 function Default-Slug([string]$remoteKey, [string]$projectPath) {
   # Fallback when no docs/registry: derive from remote basename, else folder name.
   if ($remoteKey) { return ($remoteKey -split '/')[-1] }
@@ -81,7 +96,18 @@ switch ($Action) {
     $cfg = Load-Config
     Ensure-NotesRepo $cfg
     Push-Location $cfg.notesDir
-    try { git pull --ff-only 2>&1 | Out-Null } finally { Pop-Location }
+    # --rebase --autostash: a genuinely-unpushed local registration survives and replays on
+    # top; a stale/aborted local edit no longer blocks the sync. Do NOT pipe to Out-Null or
+    # redirect stderr - a swallowed failure here leaves the registry stale and cascades into
+    # bad guesses downstream. Surface any real failure loudly instead of printing "OK".
+    try {
+      git pull --rebase --autostash
+      $code = $LASTEXITCODE
+    }
+    finally { Pop-Location }
+    if ($code -ne 0) {
+      throw "PULL_FAILED: notes repo at $($cfg.notesDir) could not sync (exit $code). Resolve manually there, then re-run bootstrap."
+    }
     Write-Output "OK: notes repo ready at $($cfg.notesDir)"
   }
 
@@ -94,14 +120,31 @@ switch ($Action) {
     if ($remoteKey -and $reg.projects.PSObject.Properties.Name -contains $remoteKey) {
       $entry = $reg.projects.$remoteKey
     }
+    # Fallback: the committed .workstation.json marker. Lets a fresh machine resolve the
+    # mapping without guessing when the synced registry hasn't got this project yet.
+    $viaMarker = $false
+    if (-not $entry) {
+      $marker = Load-Marker $ProjectPath
+      if ($marker -and $marker.client -and $marker.project) {
+        $entry = [pscustomobject]@{ client = $marker.client; project = $marker.project }
+        $viaMarker = $true
+        # Self-heal: seed the registry so later resolves are fast and the mapping syncs.
+        if ($remoteKey) {
+          $reg.projects | Add-Member -NotePropertyName $remoteKey -NotePropertyValue $entry -Force
+          Save-Registry $cfg $reg
+        }
+      }
+    }
     if ($entry) {
       $dir = Join-Path (Join-Path $cfg.notesDir $entry.client) $entry.project
+      if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Path $dir -Force | Out-Null }
       Write-Output "found: true"
       Write-Output "client: $($entry.client)"
       Write-Output "project: $($entry.project)"
       Write-Output "dir: $dir"
       Write-Output "link: $(Join-Path $ProjectPath '_notes')"
       Write-Output "remoteKey: $remoteKey"
+      if ($viaMarker) { Write-Output "note: resolved via .workstation.json marker; registry healed." }
     }
     else {
       Write-Output "found: false"
@@ -122,8 +165,12 @@ switch ($Action) {
     Save-Registry $cfg $reg
     $dir = Join-Path (Join-Path $cfg.notesDir $Client) $Project
     if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Path $dir -Force | Out-Null }
+    # Drop a committed marker in the client repo so any fresh machine resolves this mapping
+    # without guessing (belt-and-suspenders for a stale/unreachable registry). Just two names.
+    $markerPath = Write-Marker $ProjectPath $Client $Project
     Write-Output "registered: $remoteKey -> $Client/$Project"
     Write-Output "dir: $dir"
+    Write-Output "marker: $markerPath  (commit this to the project repo)"
   }
 
   'link' {
@@ -136,6 +183,8 @@ switch ($Action) {
     $entry = $reg.projects.$remoteKey
     $target = Join-Path (Join-Path $cfg.notesDir $entry.client) $entry.project
     if (-not (Test-Path $target)) { New-Item -ItemType Directory -Path $target -Force | Out-Null }
+    # Backfill the committed marker for projects registered before markers existed.
+    if (-not (Load-Marker $ProjectPath)) { Write-Marker $ProjectPath $entry.client $entry.project | Out-Null }
     $link = Join-Path $ProjectPath '_notes'
 
     if (Test-Path $link) {
