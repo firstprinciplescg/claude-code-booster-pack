@@ -135,6 +135,10 @@ WIP or personal handoff notes pushed to a client's remote.
 - Each project's local `_notes/` is a **junction/symlink** into its folder in that repo, so
   the commands read/write `_notes/...` in the project while the files live in (and sync via)
   the central repo. `WORKSTATION.md` lives at `_notes/WORKSTATION.md`.
+- Claude Code's per-project **memory** (`~/.claude/projects/<slug>/memory`, outside the
+  project) is also a junction, into `<client>/<project>/_memory` in the same repo, so memory
+  follows you between machines. On first link, existing local memory is copied in (never
+  overwriting) and the original is kept as `memory.bak-<timestamp>`.
 - Mechanics live in `scripts/workstation.ps1` (actions: `bootstrap`, `resolve`, `register`,
   `link`, `pull`, `push`, `discover`, `init-config`), driven by a local
   `~/.claude/workstation.json` config.

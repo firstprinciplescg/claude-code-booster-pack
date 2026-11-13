@@ -48,11 +48,16 @@ Helper script (does all the mechanics): `~/.claude/scripts/workstation.ps1`
    > Run `bootstrap` fully **before** `resolve` (never batch them in parallel): `resolve`
    > reads the registry that `bootstrap` just synced. A stale read is what forces a bad guess.
 
-3. **Ensure the `_notes` junction exists** (creates it on a fresh machine; idempotent; also
-   makes sure `.git/info/exclude` hides `_notes/` + `WORKSTATION.md` from the client repo):
+3. **Ensure the `_notes` and memory junctions exist** (creates them on a fresh machine;
+   idempotent; also makes sure `.git/info/exclude` hides `_notes/` + `WORKSTATION.md` from
+   the client repo). Claude's project memory (`~/.claude/projects/<slug>/memory`) is linked
+   into `<client>/<project>/_memory` in the notes repo so it syncs too:
    ```bash
    powershell -NoProfile -ExecutionPolicy Bypass -File "$HOME/.claude/scripts/workstation.ps1" -Action link
    ```
+   If it prints `MEMORY_CONFLICT`, diff each named file against the printed `backup:` dir and
+   merge by hand (for `MEMORY.md`, keep the union of index lines). Memory edited by this
+   session before the link existed is only in the backup until merged.
 
 4. **Pull latest notes**:
    ```bash
