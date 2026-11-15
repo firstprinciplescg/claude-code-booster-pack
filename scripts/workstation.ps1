@@ -6,6 +6,8 @@
   Each project's local _notes/ is a junction into its <client>/<project>/ folder, so
   notes read/written as _notes/... in the project actually live in (and sync via) the
   central repo - never the client's repo.
+  Claude Code's per-project memory (~/.claude/projects/<slug>/memory) is likewise a
+  junction into <client>/<project>/_memory, so memory syncs between machines too.
 
   Config: ~/.claude/workstation.json  { notesRemote, notesDir, git:{userName,userEmail} }
 
@@ -208,6 +210,47 @@ switch ($Action) {
       if ($lines -notcontains '_notes/') { Add-Content $exclude '_notes/' }
       if ($lines -notcontains 'WORKSTATION.md') { Add-Content $exclude 'WORKSTATION.md' }
       Write-Output "OK: .git/info/exclude covers _notes/ and WORKSTATION.md"
+    }
+
+    # Claude Code per-project memory lives OUTSIDE the project, at
+    # ~/.claude/projects/<slug>/memory, where <slug> is the absolute project path with every
+    # non-alphanumeric char replaced by '-'. The slug is computed per machine, so differing
+    # usernames/paths across machines still land on the same central <client>/<project>/_memory.
+    $memTarget = Join-Path $target '_memory'
+    if (-not (Test-Path $memTarget)) { New-Item -ItemType Directory -Path $memTarget -Force | Out-Null }
+    $slug = ($ProjectPath.TrimEnd('\', '/')) -replace '[^A-Za-z0-9]', '-'
+    $memParent = Join-Path (Join-Path (Join-Path $HOME '.claude') 'projects') $slug
+    if (-not (Test-Path $memParent)) { New-Item -ItemType Directory -Path $memParent -Force | Out-Null }
+    $memLink = Join-Path $memParent 'memory'
+
+    if (Test-Path $memLink) {
+      $mi = Get-Item $memLink -Force
+      if ($mi.LinkType -eq 'Junction') {
+        Write-Output "OK: memory junction already present -> $($mi.Target -join ',')"
+      }
+      else {
+        # First link on this machine: Claude already created a real memory dir. Copy in any
+        # files the central copy lacks (never overwrite), keep the local dir as a backup,
+        # then replace it with the junction. Differing same-name files are reported, not merged.
+        $conflicts = @()
+        Get-ChildItem $memLink -File -Force | ForEach-Object {
+          $dest = Join-Path $memTarget $_.Name
+          if (-not (Test-Path $dest)) { Copy-Item $_.FullName $dest }
+          elseif ((Get-FileHash $dest).Hash -ne (Get-FileHash $_.FullName).Hash) { $conflicts += $_.Name }
+        }
+        $backup = "$memLink.bak-" + (Get-Date -Format 'yyyyMMdd-HHmmss')
+        Rename-Item -Path $memLink -NewName (Split-Path $backup -Leaf)
+        New-Item -ItemType Junction -Path $memLink -Target $memTarget | Out-Null
+        Write-Output "OK: migrated memory into $memTarget and created junction $memLink"
+        Write-Output "backup: $backup"
+        if ($conflicts.Count -gt 0) {
+          Write-Output "WARN: MEMORY_CONFLICT - central copy kept; local versions are in the backup: $($conflicts -join ', ')"
+        }
+      }
+    }
+    else {
+      New-Item -ItemType Junction -Path $memLink -Target $memTarget | Out-Null
+      Write-Output "OK: created memory junction $memLink -> $memTarget"
     }
   }
 

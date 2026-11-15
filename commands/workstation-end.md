@@ -34,10 +34,13 @@ Helper script: `~/.claude/scripts/workstation.ps1`
    powershell -NoProfile -ExecutionPolicy Bypass -File "$HOME/.claude/scripts/workstation.ps1" -Action register -Client <client> -Project <project>
    ```
 
-3. **Ensure the junction**:
+3. **Ensure the junctions** (`_notes` and Claude project memory → `<client>/<project>/_memory`,
+   so the push below carries memory to the other machine):
    ```bash
    powershell -NoProfile -ExecutionPolicy Bypass -File "$HOME/.claude/scripts/workstation.ps1" -Action link
    ```
+   If it prints `MEMORY_CONFLICT`, merge the named files from the printed `backup:` dir into
+   the central copy before pushing.
 
 4. **Check project status** (report only):
    ```bash
